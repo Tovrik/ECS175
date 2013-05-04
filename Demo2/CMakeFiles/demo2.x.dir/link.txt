@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/demo2.x.dir/main.cpp.o CMakeFiles/demo2.x.dir/glutwidget.cpp.o  -o demo2.x -rdynamic -lGL -lGLU -lglut -lXmu -lXi 

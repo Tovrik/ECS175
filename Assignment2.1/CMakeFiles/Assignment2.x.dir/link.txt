@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/Assignment2.x.dir/main.cpp.o CMakeFiles/Assignment2.x.dir/point.cpp.o CMakeFiles/Assignment2.x.dir/shader_utils.cpp.o  -o Assignment2.x -rdynamic -lGL -lGLU -lglut -lXmu -lXi -lGLEW 

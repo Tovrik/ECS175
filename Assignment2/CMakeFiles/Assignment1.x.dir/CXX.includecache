@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/tovrikthethird/Documents/ECS175/Assignment2/glutwidget.cpp
+GL/glew.h
+-
+OpenGL/gl.h
+-
+OpenGL/glu.h
+-
+GLUT/glut.h
+-
+GL/glew.h
+-
+GL/gl.h
+-
+GL/glu.h
+-
+GL/glut.h
+-
+glutwidget.hpp
+/home/tovrikthethird/Documents/ECS175/Assignment2/glutwidget.hpp
+iostream
+-
+
+/home/tovrikthethird/Documents/ECS175/Assignment2/glutwidget.hpp
+curve.hpp
+/home/tovrikthethird/Documents/ECS175/Assignment2/curve.hpp
+
+/home/tovrikthethird/Documents/ECS175/Assignment2/main.cpp
+iostream
+-
+glutwidget.hpp
+/home/tovrikthethird/Documents/ECS175/Assignment2/glutwidget.hpp
+

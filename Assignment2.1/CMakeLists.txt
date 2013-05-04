@@ -1,0 +1,26 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+project(Assignment2)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+FIND_PACKAGE (OpenGL REQUIRED)
+FIND_PACKAGE (GLUT REQUIRED)
+FIND_PACKAGE (GLEW REQUIRED)
+
+#Debug mode
+#ADD_DEFINITIONS(-g )
+
+#Release Mode
+ADD_DEFINITIONS(-s -O3 )
+
+
+#create the executable
+SET(EXEC Assignment2.x)
+ADD_EXECUTABLE(${EXEC} main.cpp point.cpp shader_utils.cpp)
+
+TARGET_LINK_LIBRARIES (${EXEC}
+   ${OPENGL_gl_LIBRARY}
+   ${OPENGL_glu_LIBRARY}
+   ${GLUT_LIBRARY}
+   ${GLEW_GLEW_LIBRARY}
+)

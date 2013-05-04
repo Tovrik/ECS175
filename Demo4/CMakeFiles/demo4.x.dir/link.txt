@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/demo4.x.dir/main.cpp.o CMakeFiles/demo4.x.dir/glutwidget.cpp.o CMakeFiles/demo4.x.dir/shader_utils.cpp.o CMakeFiles/demo4.x.dir/cube.cpp.o  -o demo4.x -rdynamic -lGL -lGLU -lglut -lXmu -lXi -lGLEW 

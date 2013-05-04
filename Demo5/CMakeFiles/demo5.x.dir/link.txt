@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/demo5.x.dir/main.cpp.o CMakeFiles/demo5.x.dir/glutwidget.cpp.o CMakeFiles/demo5.x.dir/curve.cpp.o  -o demo5.x -rdynamic -lGL -lGLU -lglut -lXmu -lXi -lGLEW 
