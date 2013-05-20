@@ -10,7 +10,6 @@
 
 #define PI 3.1415926
 #define KEY_ESCAPE 27
-
 using namespace std;
 
 unsigned int m_frame;
@@ -23,20 +22,33 @@ static char message[1024];
 static char * ptr = message;
 static int degree = 20;
 static float t;
+GLdouble eyeX = 0.0f, eyeY = 6.0f, eyeZ = 10.0f, 
+centerX = 0.0f, centerY = 0.0f, centerZ = 0.0f, 
+upX = 0.0f, upY = 1.0f, upZ = 0.0f;
+double mouseX, mouseY;
+double cameraRadius = 4.5;
+double cameraCenter[3] = {0.0, 0.0, 0.0};
+double cameraRotate[2] = {0.0, 0.0};
+double cameraPosition[3] = {
+    camera_center[0] + camera_radius*cos(radians(camera_rot[0]))*cos(radians(camera_rot[1])),
+    camera_center[1] + camera_radius*sin(radians(camera_rot[1])),
+    camera_center[2] + camera_radius*sin(radians(camera_rot[0]))*cos(radians(camera_rot[1]))
+}
 
 static unsigned int m_texture;
 
 GLfloat M[16];
 
 GLfloat cpoints[][3] = {
-        {2.0f, 3.0f, 0.0f},
-        {1.8f, 2.7f, 0.0f},
-        {2.8f, 2.2f, 0.0f},
-        {3.0f, 1.0f, 0.0f},
-        {1.0f, -1.0f, 0.0f}
+        {0.0f, 0.0f, 0.0f},
+        {2.0f, 0.5f, 0.0f},
+        {2.5f, 1.0f, 0.0f},
+        {0.5f, 2.0f, 0.0f},
+        {0.5f, 2.5f, 0.0f}, 
+        {1.0f, 3.0f, 0.0f}
 };
 size_t npts = 20;
-size_t sec = 4;
+size_t sec = 2000;
 
 struct glutWindow {
     int width;
@@ -129,12 +141,12 @@ void bezier(float t, float & x, float & y, float & z) {
     float it = 1.0f -t;
 
     // calculate blending functions
-    float b0 = 1*t*t*t*t;
-    float b1 = 4*t*t*t*it;
-    float b2 = 6*t*t*it*it;
-    float b3 = 4*t*it*it*it;
-    float b4 = 1*it*it*it*it;
-
+    float b0 = 1*t*t*t*t*t;
+    float b1 = 5*t*t*t*t*it;
+    float b2 = 10*t*t*t*it*it;
+    float b3 = 10*t*t*it*it*it;
+    float b4 = 5*t*it*it*it*it;
+    float b5 = 1*it*it*it*it*it;
     // calculate the x,y and z of the curve point by summing
     // the Control vertices weighted by their respective blending
     // functions
@@ -142,19 +154,22 @@ void bezier(float t, float & x, float & y, float & z) {
         b1*cpoints[1][0] +
         b2*cpoints[2][0] +
         b3*cpoints[3][0] +
-        b4*cpoints[4][0];
+        b4*cpoints[4][0] +
+        b5*cpoints[5][0];
 
     y = b0*cpoints[0][1] +
         b1*cpoints[1][1] +
         b2*cpoints[2][1] +
         b3*cpoints[3][1] +
-        b4*cpoints[4][1];
+        b4*cpoints[4][1] +
+        b5*cpoints[5][1];
 
     z = b0*cpoints[0][2] +
         b1*cpoints[1][2] +
         b2*cpoints[2][2] +
         b3*cpoints[3][2] +
-        b4*cpoints[4][2];
+        b4*cpoints[4][2] +
+        b5*cpoints[5][2];
 }
 
 void drawBitmapText(char * text, float x, float y, float z) 
@@ -214,9 +229,9 @@ void display() {
     glMatrixMode(GL_MODELVIEW);                                                 // specify which matrix is the current matrix
     glLoadIdentity();                                                           // reset projection matrix
 
-    gluLookAt(0.0f, 6.0f, 10.0f,
-              0.0f, 0.0f, 0.0f,
-              0.0f, 1.0f, 0.0f);
+    gluLookAt(eyeX, eyeY, eyeZ,
+              centerX, centerY, centerZ,
+              upX, upY, upZ);
 
     glBegin(GL_LINES);
         glColor3f(1.0f,0.0f,0.0f); glVertex3f(0.0f,0.0f,0.0f);
@@ -329,7 +344,7 @@ void initialize() {
     glClearDepth(1.0f);                                                         // specify clear values for the depth buffer
 
     //XXX
-    CBitmap image("texture.bmp");               //read bitmap image
+    CBitmap image("obermaier.bmp");               //read bitmap image
     glGenTextures(1, &m_texture);               //allocate 1 texture
     glBindTexture(GL_TEXTURE_2D, m_texture);    //bind this texture to be active
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.GetWidth(), image.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetBits());
@@ -387,6 +402,14 @@ void keyboard(unsigned char key, int mousePositionX, int mousePositionY) {
     }
 }
 
+void zoomIn(){
+
+}
+
+void zoomOut(){
+
+}
+
 void mouseButton(int button, int state, int x, int y) {
     if(button == GLUT_LEFT_BUTTON) {
         if(state == GLUT_DOWN) {
@@ -396,13 +419,64 @@ void mouseButton(int button, int state, int x, int y) {
             printf("Up at (%d,%d)\n", x,y);
         }
     }
-
+    else if(button == 3)
+        zoomIn();
+    else if(button == 4)
+        zoomOut();
     fflush(stdout);
 }
+
+
+//Allows manipulation of the camera
+void changeCamera(GLdouble x1, GLdouble y1, GLdouble z1, GLdouble x2, GLdouble y2, GLdouble z2, GLdouble x3, GLdouble y3, GLdouble z3){
+    eyeX = x1; eyeY = y1; eyeZ = z1; 
+    centerX = x2; centerY = y2; centerZ = z2; 
+    upX = x3; upY = y3; upZ = z3;
+}
+
+//Translation functions
+void moveLeft(){
+    changeCamera(eyeX + .05, eyeY, eyeZ, centerX + 0.05, centerY, centerZ, upX, upY, upZ);
+    display();
+}
+
+void moveRight(){
+    changeCamera(eyeX - .05, eyeY, eyeZ, centerX - 0.05, centerY, centerZ, upX, upY, upZ);
+    display();
+}
+
+void moveUp(){
+    changeCamera(eyeX, eyeY - 0.05, eyeZ, centerX, centerY - 0.05, centerZ, upX, upY, upZ);
+    display();
+}
+
+void moveDown(){
+    changeCamera(eyeX, eyeY + 0.05, eyeZ, centerX, centerY + 0.05, centerZ, upX, upY, upZ);
+    display();
+}
+
+void keyboard(int key, int x, int y){
+    if(key == GLUT_KEY_UP)
+        moveUp();
+    else if(key == GLUT_KEY_DOWN)
+        moveDown();    
+    else if(key == GLUT_KEY_RIGHT)
+        moveRight();    
+    else if(key == GLUT_KEY_LEFT)
+        moveLeft();   
+}
+
+void rotateShape(){
+    changeCamera(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
+    display();
+}
+
 
 void mouseMotion(int x, int y) {
     printf("x %d y %d\n", x,y);
     fflush(stdout);
+    mouseX = x;
+    mouseY = y;
 }
 
 int main(int argc, char * argv[]) {
@@ -421,7 +495,7 @@ int main(int argc, char * argv[]) {
     glutInitWindowSize(w.width, w.height);                      // set window size
     glutInitWindowPosition(10,10);
     glutCreateWindow(w.title);                                  // create Window
-
+    glutSpecialFunc(keyboard);
     glutDisplayFunc(display);                                   // register `Display Function'
     glutIdleFunc(display);                                      // register `Idle Function'
     glutReshapeFunc(reshape);                                   // register `Reshape Function'
