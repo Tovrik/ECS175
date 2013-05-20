@@ -2,11 +2,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <math.h>
 #include <algorithm>
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glut.h>
 #include "bitmap/bitmap.h"
+
 
 #define PI 3.1415926
 #define KEY_ESCAPE 27
@@ -26,14 +28,22 @@ GLdouble eyeX = 0.0f, eyeY = 6.0f, eyeZ = 10.0f,
 centerX = 0.0f, centerY = 0.0f, centerZ = 0.0f, 
 upX = 0.0f, upY = 1.0f, upZ = 0.0f;
 double mouseX, mouseY;
-double cameraRadius = 4.5;
+double cursorDownX, cursorDownY, cursorUpX, cursorUpY, cursorCurrentX, cursorCurrentY;
+double prevDiffX = 0, prevDiffY = 0;
+
+double radians(double x){
+    return x * (180/PI);
+}
+
+
+double cameraRadius = 20;
 double cameraCenter[3] = {0.0, 0.0, 0.0};
 double cameraRotate[2] = {0.0, 0.0};
 double cameraPosition[3] = {
-    camera_center[0] + camera_radius*cos(radians(camera_rot[0]))*cos(radians(camera_rot[1])),
-    camera_center[1] + camera_radius*sin(radians(camera_rot[1])),
-    camera_center[2] + camera_radius*sin(radians(camera_rot[0]))*cos(radians(camera_rot[1]))
-}
+    cameraCenter[0] + cameraRadius*cos(radians(cameraRotate[0]))*cos(radians(cameraRotate[1])),
+    cameraCenter[1] + cameraRadius*sin(radians(cameraRotate[1])),
+    cameraCenter[2] + cameraRadius*sin(radians(cameraRotate[0]))*cos(radians(cameraRotate[1]))
+};
 
 static unsigned int m_texture;
 
@@ -41,11 +51,15 @@ GLfloat M[16];
 
 GLfloat cpoints[][3] = {
         {0.0f, 0.0f, 0.0f},
-        {2.0f, 0.5f, 0.0f},
-        {2.5f, 1.0f, 0.0f},
-        {0.5f, 2.0f, 0.0f},
-        {0.5f, 2.5f, 0.0f}, 
-        {1.0f, 3.0f, 0.0f}
+        {2.0f, 0.0f, 0.0f},
+        {4.0f, 2.0f, 0.0f},
+        {2.0f, 4.0f, 0.0f},
+        {3.0f, 6.0f, 0.0f},
+        {0.5f, 7.5f, 0.0f}, 
+        {1.5f, 10.0f, 0.0f},
+        {0.25f, 7.5f, 0.0f},
+        {0.25f, 0.25f, 0.0f}, 
+        {0.0f, 0.25f, 0.0f}
 };
 size_t npts = 20;
 size_t sec = 2000;
@@ -141,12 +155,17 @@ void bezier(float t, float & x, float & y, float & z) {
     float it = 1.0f -t;
 
     // calculate blending functions
-    float b0 = 1*t*t*t*t*t;
-    float b1 = 5*t*t*t*t*it;
-    float b2 = 10*t*t*t*it*it;
-    float b3 = 10*t*t*it*it*it;
-    float b4 = 5*t*it*it*it*it;
-    float b5 = 1*it*it*it*it*it;
+    float b0 = 1*t*t*t*t*t*t*t*t*t;
+    float b1 = 9*t*t*t*t*t*t*t*t*it;
+    float b2 = 36*t*t*t*t*t*t*t*it*it;
+    float b3 = 84*t*t*t*t*t*t*it*it*it;
+    float b4 = 126*t*t*t*t*t*it*it*it*it;
+    float b5 = 126*t*t*t*t*it*it*it*it*it;
+    float b6 = 84*t*t*t*it*it*it*it*it*it;
+    float b7 = 36*t*t*it*it*it*it*it*it*it;
+    float b8 = 9*t*it*it*it*it*it*it*it*it;
+    float b9 = 1*it*it*it*it*it*it*it*it*it;
+
     // calculate the x,y and z of the curve point by summing
     // the Control vertices weighted by their respective blending
     // functions
@@ -155,21 +174,34 @@ void bezier(float t, float & x, float & y, float & z) {
         b2*cpoints[2][0] +
         b3*cpoints[3][0] +
         b4*cpoints[4][0] +
-        b5*cpoints[5][0];
+        b5*cpoints[5][0] +
+        b6*cpoints[6][0] +
+        b7*cpoints[7][0] +
+        b8*cpoints[8][0] +
+        b9*cpoints[9][0];
 
     y = b0*cpoints[0][1] +
         b1*cpoints[1][1] +
         b2*cpoints[2][1] +
         b3*cpoints[3][1] +
         b4*cpoints[4][1] +
-        b5*cpoints[5][1];
+        b5*cpoints[5][1] +
+        b6*cpoints[6][1] +
+        b7*cpoints[7][1] +
+        b8*cpoints[8][1] +
+        b9*cpoints[9][1];
 
     z = b0*cpoints[0][2] +
         b1*cpoints[1][2] +
         b2*cpoints[2][2] +
         b3*cpoints[3][2] +
         b4*cpoints[4][2] +
-        b5*cpoints[5][2];
+        b5*cpoints[5][2] + 
+        b6*cpoints[6][2] +
+        b7*cpoints[7][2] +
+        b8*cpoints[8][2] +
+        b9*cpoints[9][2];
+
 }
 
 void drawBitmapText(char * text, float x, float y, float z) 
@@ -229,9 +261,9 @@ void display() {
     glMatrixMode(GL_MODELVIEW);                                                 // specify which matrix is the current matrix
     glLoadIdentity();                                                           // reset projection matrix
 
-    gluLookAt(eyeX, eyeY, eyeZ,
-              centerX, centerY, centerZ,
-              upX, upY, upZ);
+    gluLookAt(cameraPosition[0], cameraPosition[1], cameraPosition[2],
+        cameraCenter[0], cameraCenter[1], cameraCenter[2],
+        0, 1, 0);
 
     glBegin(GL_LINES);
         glColor3f(1.0f,0.0f,0.0f); glVertex3f(0.0f,0.0f,0.0f);
@@ -290,8 +322,8 @@ void display() {
             next_norm.normalize();
 
             float u = j*1.0f/(npts-1);
-            glColor3f(0.0f,1.0f,1.0f); glTexCoord2f((float)(i+0)/sec, u); glNormal3f(curr_norm.x,curr_norm.y,curr_norm.z); glVertex3f(curr_curves[j].x, curr_curves[j].y, curr_curves[j].z);
-            glColor3f(0.0f,1.0f,1.0f); glTexCoord2f((float)(i+1)/sec, u); glNormal3f(next_norm.x,next_norm.y,next_norm.z); glVertex3f(next_curves[j].x, next_curves[j].y, next_curves[j].z);
+            glColor3f(1.0f,1.0f,1.0f); glTexCoord2f((float)(i+0)/sec, u); glNormal3f(curr_norm.x,curr_norm.y,curr_norm.z); glVertex3f(curr_curves[j].x, curr_curves[j].y, curr_curves[j].z);
+            glColor3f(1.0f,1.0f,1.0f); glTexCoord2f((float)(i+1)/sec, u); glNormal3f(next_norm.x,next_norm.y,next_norm.z); glVertex3f(next_curves[j].x, next_curves[j].y, next_curves[j].z);
         }
         glEnd();
 
@@ -344,7 +376,7 @@ void initialize() {
     glClearDepth(1.0f);                                                         // specify clear values for the depth buffer
 
     //XXX
-    CBitmap image("obermaier.bmp");               //read bitmap image
+    CBitmap image("vase1.bmp");               //read bitmap image
     glGenTextures(1, &m_texture);               //allocate 1 texture
     glBindTexture(GL_TEXTURE_2D, m_texture);    //bind this texture to be active
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.GetWidth(), image.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetBits());
@@ -368,6 +400,76 @@ void reshape(int width, int height) {
     GLfloat aspect = (GLfloat) w.width / w.height;
     gluPerspective(w.field_of_view_angle, aspect, w.z_near, w.z_far);
 //    glOrtho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 20.0f);
+}
+
+//Allows manipulation of the camera
+void updateCamera(){
+    cameraPosition[0] = cameraCenter[0] + cameraRadius*cos(radians(cameraRotate[0]))*cos(radians(cameraRotate[1]));
+    cameraPosition[1] = cameraCenter[1] + cameraRadius*sin(radians(cameraRotate[1]));
+    cameraPosition[2] = cameraCenter[2] + cameraRadius*sin(radians(cameraRotate[0]))*cos(radians(cameraRotate[1]));
+}
+
+void rotate(){
+    double diffx = cursorCurrentX - cursorDownX;
+    double diffy = cursorCurrentY - cursorDownY;
+    if(diffx > prevDiffX)
+        cameraRotate[0] += 0.0001;
+    else if(diffx < prevDiffX)
+        cameraRotate[0] -= 0.0001;
+    if(diffy > prevDiffY)
+        cameraRotate[1] += 0.0001;
+    else if(diffy < prevDiffY)
+        cameraRotate[1] -= 0.0001;
+
+    updateCamera();
+    prevDiffX = diffx;
+    prevDiffY = diffy;
+
+    for(int i = 0; i < 3; i++)
+    {
+        cout << i << " " << cameraPosition[i] << endl;
+        cout << i << " " << cameraCenter[i] << endl;
+    }
+}
+
+void rotateClockwise(){
+    cameraRotate[0] += 0.001;
+    updateCamera();
+}
+
+void rotateCounterclockwise(){
+    cameraRotate[0] -= 0.001;
+    updateCamera();
+}
+
+void rotateUp(){
+    cameraRotate[1] -= 0.001;
+    updateCamera();
+}
+
+void rotateDown(){
+    cameraRotate[1] += 0.001;
+    updateCamera();
+}
+
+void zoomIn(){
+    cameraRadius = cameraRadius - 0.1;
+    updateCamera();
+}
+
+void zoomOut(){
+    cameraRadius = cameraRadius + 0.1;
+    updateCamera();
+}
+
+void reset(){
+    cameraRadius = 20;
+    cameraCenter[0] = 0.0;
+    cameraCenter[1] = 0.0;
+    cameraCenter[2] = 0.0;
+    cameraRotate[0] = 0.0;
+    cameraRotate[1] = 0.0;
+    updateCamera();
 }
 
 void keyboard(unsigned char key, int mousePositionX, int mousePositionY) {
@@ -397,61 +499,76 @@ void keyboard(unsigned char key, int mousePositionX, int mousePositionY) {
             degree -= 1;
             npts = max(2, (int)npts-1);
             break;
+        case 'z':
+            zoomIn();
+            break;
+        case 'x':
+            zoomOut();
+            break;
+        case 'a':
+            rotateCounterclockwise();
+            break;
+        case 'd':
+            rotateClockwise();
+            break;
+        case 'w':
+            rotateUp();
+            break;
+        case 's':
+            rotateDown();
+            break;
+        case 'r':
+            reset();
+            break;
         default:
             break;
     }
-}
-
-void zoomIn(){
-
-}
-
-void zoomOut(){
-
 }
 
 void mouseButton(int button, int state, int x, int y) {
     if(button == GLUT_LEFT_BUTTON) {
         if(state == GLUT_DOWN) {
             printf("Down at (%d,%d)\n", x,y);
+            cursorDownX = x;
+            cursorDownY = y;
         }
         else {
             printf("Up at (%d,%d)\n", x,y);
+            cursorUpX = x;
+            cursorUpY = y;
         }
     }
     else if(button == 3)
         zoomIn();
     else if(button == 4)
         zoomOut();
+    glutPostRedisplay();
     fflush(stdout);
-}
-
-
-//Allows manipulation of the camera
-void changeCamera(GLdouble x1, GLdouble y1, GLdouble z1, GLdouble x2, GLdouble y2, GLdouble z2, GLdouble x3, GLdouble y3, GLdouble z3){
-    eyeX = x1; eyeY = y1; eyeZ = z1; 
-    centerX = x2; centerY = y2; centerZ = z2; 
-    upX = x3; upY = y3; upZ = z3;
 }
 
 //Translation functions
 void moveLeft(){
-    changeCamera(eyeX + .05, eyeY, eyeZ, centerX + 0.05, centerY, centerZ, upX, upY, upZ);
+    cameraCenter[0] += 0.05;
+    //cameraPosition[1] ;
+    //changeCamera(eyeX + .05, eyeY, eyeZ, centerX + 0.05, centerY, centerZ, upX, upY, upZ);
     display();
 }
 
 void moveRight(){
-    changeCamera(eyeX - .05, eyeY, eyeZ, centerX - 0.05, centerY, centerZ, upX, upY, upZ);
+    cameraCenter[0] -= 0.05;
+    //changeCamera(eyeX - .05, eyeY, eyeZ, centerX - 0.05, centerY, centerZ, upX, upY, upZ);
     display();
 }
 
 void moveUp(){
-    changeCamera(eyeX, eyeY - 0.05, eyeZ, centerX, centerY - 0.05, centerZ, upX, upY, upZ);
+    cameraCenter[1] -= 0.05;
+    //changeCamera(eyeX, eyeY - 0.05, eyeZ, centerX, centerY - 0.05, centerZ, upX, upY, upZ);
     display();
 }
 
 void moveDown(){
-    changeCamera(eyeX, eyeY + 0.05, eyeZ, centerX, centerY + 0.05, centerZ, upX, upY, upZ);
+    cameraCenter[1] += 0.05;
+    //changeCamera(eyeX, eyeY + 0.05, eyeZ, centerX, centerY + 0.05, centerZ, upX, upY, upZ);
     display();
 }
 
@@ -466,17 +583,12 @@ void keyboard(int key, int x, int y){
         moveLeft();   
 }
 
-void rotateShape(){
-    changeCamera(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-    display();
-}
-
-
 void mouseMotion(int x, int y) {
-    printf("x %d y %d\n", x,y);
+    //printf("x %d y %d\n", x,y);
     fflush(stdout);
-    mouseX = x;
-    mouseY = y;
+    cursorCurrentX = x;
+    cursorCurrentY = y;
+    rotate();
 }
 
 int main(int argc, char * argv[]) {
