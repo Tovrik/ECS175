@@ -37,7 +37,7 @@ double radians(double x){
 
 
 double cameraRadius = 20;
-double cameraCenter[3] = {0.0, 0.0, 0.0};
+double cameraCenter[3] = {0.0, 5.0, 0.0};
 double cameraRotate[2] = {0.0, 0.0};
 double cameraPosition[3] = {
     cameraCenter[0] + cameraRadius*cos(radians(cameraRotate[0]))*cos(radians(cameraRotate[1])),
@@ -52,13 +52,13 @@ GLfloat M[16];
 GLfloat cpoints[][3] = {
         {0.0f, 0.0f, 0.0f},
         {2.0f, 0.0f, 0.0f},
-        {4.0f, 2.0f, 0.0f},
+        {7.0f, 0.0f, 0.0f},
         {2.0f, 4.0f, 0.0f},
-        {3.0f, 6.0f, 0.0f},
-        {0.5f, 7.5f, 0.0f}, 
+        {1.0f, 6.0f, 0.0f},
+        {3.5f, 7.5f, 0.0f}, 
         {1.5f, 10.0f, 0.0f},
-        {0.25f, 7.5f, 0.0f},
-        {0.25f, 0.25f, 0.0f}, 
+        {1.25f, 7.5f, 0.0f},
+        {1.25f, 0.25f, 0.0f}, 
         {0.0f, 0.25f, 0.0f}
 };
 size_t npts = 20;
@@ -274,6 +274,22 @@ void display() {
         glColor3f(0.0f,0.0f,1.0f); glVertex3f(0.0f,0.0f,5.0f);
     glEnd();
 
+    //Lighting
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_shininess[] = { 50.0 };
+    GLfloat light_position[] = { cameraPosition[0], cameraPosition[1], cameraPosition[2], 0.0 };
+    glClearColor (0.0, 0.0, 0.0, 0.0);
+    glShadeModel (GL_SMOOTH);
+
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_DEPTH_TEST);
+    //end lighting
+
     float angle = -360.0f/sec;
     myRotatef(M, angle, 0.0f,1.0f,0.0f);
 
@@ -359,21 +375,21 @@ void initialize() {
         exit(-1);
     }
 
-    //Lighting
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_shininess[] = { 50.0 };
-    GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
-    glClearColor (0.0, 0.0, 0.0, 0.0);
-    glShadeModel (GL_SMOOTH);
+    // //Lighting
+    // GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    // GLfloat mat_shininess[] = { 50.0 };
+    // GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+    // glClearColor (0.0, 0.0, 0.0, 0.0);
+    // glShadeModel (GL_SMOOTH);
 
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    // glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    // glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    // glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_DEPTH_TEST);
-    //end lighting
+    // glEnable(GL_LIGHTING);
+    // glEnable(GL_LIGHT0);
+    // glEnable(GL_DEPTH_TEST);
+    // //end lighting
 
     glViewport(0,0, w.width,w.height);
 
@@ -392,7 +408,7 @@ void initialize() {
     glClearDepth(1.0f);                                                         // specify clear values for the depth buffer
 
     //XXX
-    CBitmap image("vase1.bmp");               //read bitmap image
+    CBitmap image("texture2.bmp");               //read bitmap image
     glGenTextures(1, &m_texture);               //allocate 1 texture
     glBindTexture(GL_TEXTURE_2D, m_texture);    //bind this texture to be active
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.GetWidth(), image.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetBits());
