@@ -359,6 +359,22 @@ void initialize() {
         exit(-1);
     }
 
+    //Lighting
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_shininess[] = { 50.0 };
+    GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+    glClearColor (0.0, 0.0, 0.0, 0.0);
+    glShadeModel (GL_SMOOTH);
+
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_DEPTH_TEST);
+    //end lighting
+
     glViewport(0,0, w.width,w.height);
 
     glMatrixMode(GL_PROJECTION);
@@ -387,6 +403,8 @@ void initialize() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);        //specify texture coordinate treatment
 
     glBindTexture(GL_TEXTURE_2D, 0);    //bind default texture to be active
+
+
 }
 
 
@@ -425,12 +443,16 @@ void rotate(){
     prevDiffX = diffx;
     prevDiffY = diffy;
 
-    for(int i = 0; i < 3; i++)
-    {
-        cout << i << " " << cameraPosition[i] << endl;
-        cout << i << " " << cameraCenter[i] << endl;
-    }
+
+    cout << "Camera Position:      "<< "X: " << cameraPosition[0] << " Y: " << cameraPosition[1] << " Z: " << cameraPosition[2] << endl;
+    //cout << "Camera Center:        "<<"X: " << cameraCenter[0] << " Y: " << cameraCenter[1] << " Z: " << cameraCenter[2] << endl << endl;
+    cout << "Camera Rotate:        " << "X: " << cameraRotate[0] << " Y: " << cameraRotate[1] << " Z: " << endl << endl;// << cameraPosition[2] << endl;
 }
+
+
+//------------------------------------------------
+//----------- Zoom/Rotate Functions --------------
+//------------------------------------------------
 
 void rotateClockwise(){
     cameraRotate[0] += 0.001;
@@ -546,7 +568,9 @@ void mouseButton(int button, int state, int x, int y) {
     fflush(stdout);
 }
 
-//Translation functions
+//------------------------------------------------
+//------------- Translation Functions ---------------
+//------------------------------------------------
 void moveLeft(){
     cameraCenter[0] += 0.05;
     //cameraPosition[1] ;
@@ -591,12 +615,17 @@ void mouseMotion(int x, int y) {
     rotate();
 }
 
+
+//------------------------------------------------
+//--------------------- main ---------------------
+//------------------------------------------------
+
 int main(int argc, char * argv[]) {
 
     // set window values
     w.width = 1024;
     w.height = 768;
-    w.title = "Hello Triangle!";
+    w.title = "Vase";
     w.field_of_view_angle = 45;
     w.z_near = 1.0f;
     w.z_far = 50.0f;
