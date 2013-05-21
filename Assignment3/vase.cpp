@@ -25,7 +25,7 @@ static char * ptr = message;
 static int degree = 20;
 static float t;
 static int controlPoints = 22;
-
+static bool flashlight = 1;
 GLdouble eyeX = 0.0f, eyeY = 6.0f, eyeZ = 10.0f, 
 centerX = 0.0f, centerY = 0.0f, centerZ = 0.0f, 
 upX = 0.0f, upY = 1.0f, upZ = 0.0f;
@@ -243,6 +243,9 @@ GLfloat * myRotatef(GLfloat * m, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
     return m;
 }
 
+void flashlightOn(){flashlight = 1;}
+void flashlightOff(){flashlight = 0;}
+
 void display() {
 
     //clear color & depth buffers
@@ -269,18 +272,36 @@ void display() {
     glEnd();
 
     //Lighting
+    //the shape
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
-    GLfloat light_position[] = { cameraPosition[0], cameraPosition[1], cameraPosition[2], 0.0 };
+    //light1
+    GLfloat light_position0[] = { 5.0, 5.0, 5.0, 0.0 };
+    //light2
+    GLfloat light_position1[] = { cameraPosition[0], cameraPosition[1], cameraPosition[2], 0.0 };
+    GLfloat diffuse1[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat ambient1[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat specular1[] ={ 1.0, 1.0, 1.0, 1.0 };
+
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel (GL_SMOOTH);
 
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position0);
+    if(flashlight == 1){
+        glEnable(GL_LIGHT1);
+        glLightfv(GL_LIGHT1, GL_POSITION, light_position1);
+        glLightfv(GL_LIGHT1, GL_AMBIENT, ambient1);
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
+        glLightfv(GL_LIGHT1, GL_SPECULAR, specular1); 
+    }
+
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+
     glEnable(GL_DEPTH_TEST);
     //end lighting
 
@@ -518,11 +539,11 @@ void keyboard(unsigned char key, int mousePositionX, int mousePositionY) {
         case KEY_ESCAPE:
             exit(0);
             break;
-        case '1':
-            screen_x = mousePositionX;
-            screen_y = mousePositionY;
-            printf("x %d y %d\n", mousePositionX, mousePositionY);
-            break;
+        //case '1':
+          //  screen_x = mousePositionX;
+            //screen_y = mousePositionY;
+            //printf("x %d y %d\n", mousePositionX, mousePositionY);
+            //break;
         case '=':
             degree += 1;
             npts = min(100, (int)npts+1);
@@ -552,6 +573,12 @@ void keyboard(unsigned char key, int mousePositionX, int mousePositionY) {
         case 'r':
             reset();
             break;
+        case 'o':
+            flashlightOn();
+            break;
+        case 'p':
+            flashlightOff();
+            break;    
         default:
             break;
     }
@@ -583,14 +610,11 @@ void mouseButton(int button, int state, int x, int y) {
 //------------------------------------------------
 void moveLeft(){
     cameraCenter[0] += 0.05;
-    //cameraPosition[1] ;
-    //changeCamera(eyeX + .05, eyeY, eyeZ, centerX + 0.05, centerY, centerZ, upX, upY, upZ);
     display();
 }
 
 void moveRight(){
     cameraCenter[0] -= 0.05;
-    //changeCamera(eyeX - .05, eyeY, eyeZ, centerX - 0.05, centerY, centerZ, upX, upY, upZ);
     display();
 }
 
