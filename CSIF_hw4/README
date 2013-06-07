@@ -1,0 +1,46 @@
+README
+
+//Joey Jiron ID 994866648
+//Daihua Ye ID 996737445
+
+Menu
+==========================================================
+Camera Controls
+---------------------------------------
+'w' - move forward						
+'s' - move backward						
+'a' - strafe LEFT 						
+'d' - strafe RIGHT 					
+										
+UP    Arrow - strafe upwards			
+DOWN  Arrow - strafe down 				
+LEFT  Arrow - rotate left 				
+RIGHT Arrow - rotate right 				
+ 											
+ 										
+MISC
+---------------------------------------
+Mouse Enabled - YES
+'k'           - Animation On/Off
+
+RUN Instructions
+==========================================================
+either use the executable we provide or
+just type make. then run the executable named virtualWorld
+
+
+
+Description
+===========================================================
+Our program is a representation of a 3D Tron (the movie) 
+environment. We have a grid, and if you go under the grid,
+look up and see what happens!
+
+Our program uses ambient lighting, as well as specular 
+lighting. We draw objects with a solid color, using VBO's.
+Each object has a spotlight just above it's max Y value to 
+give the object a nicer look.
+
+We animate our objects using the glutTimerFunc(). We have
+5 space ships, 1 Tron cycle, 1 ship fleet, 1 satellite,
+1 smaller space ship. Explore our world and see what you find.

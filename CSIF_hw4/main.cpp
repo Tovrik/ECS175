@@ -1,0 +1,180 @@
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+#include <string.h>
+#include <math.h>
+#include </usr/include/GL/glew.h>
+#include <glut.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include "shader_utils.h"
+#include "drawWorld.h"
+
+#define w 119
+#define s 115
+#define a 97
+#define d 100
+/* GLOBAL VARAIBLES */
+/* (storage is actually allocated here) */
+int W=600;  /* window width */
+int H=600;  /* window height */
+
+bool arcball_on = false;
+bool animateWorld = true;
+void display() {
+    
+    // black background
+    glClearColor(0.0, 0.0, 0.0, 1.0); 
+    
+    // clear both the frame buffer and the depth buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    /* put plant drawing code here */
+    drawScene();
+//    drawCube();
+    /* end drawing code */
+    
+    // Swap the screen (forces drawing, and used for animation)
+    glutSwapBuffers();
+}
+
+/*
+ void onIdle() {
+ setNewRotationMatrix();
+ glutPostRedisplay();
+ }
+ */
+ float speed = 1.4;
+void keyPressed(unsigned char key, int x, int y) {
+
+
+    if (key == 'w') 
+        moveCamera(speed);
+    else if (key == 's') 
+        moveCamera(-speed);
+    else if (key == 'a') 
+        strafeCamera(speed, 'x');
+    else if (key == 'd') 
+        strafeCamera(-speed, 'x');
+    else if (key == 'k') 
+        animateWorld = animateWorld ? false : true;        
+    else if (key == 27) 
+        exit(0);
+    glutPostRedisplay();
+}
+void lookAround(int x, int y)
+{
+    //    rotateCamera(0.2, 'y');
+    //    glutPostRedisplay();
+    
+}
+
+
+
+void handleSpecialKey(int key, int x, int y) 
+{
+  
+    if (key == GLUT_KEY_UP)
+        strafeCamera(-0.7, 'y');
+//        rotateCamera(0.07, 'x');
+    else if (key == GLUT_KEY_DOWN)
+        strafeCamera(0.7, 'y');
+//        rotateCamera(-0.07, 'x');
+    else if (key == GLUT_KEY_LEFT)
+        rotateCamera(-0.07, 'y');
+    else if (key == GLUT_KEY_RIGHT)
+        rotateCamera(0.07, 'y');
+    
+    glutPostRedisplay();
+}
+void mouseMotion(int x, int y) 
+{
+    
+    if (arcball_on) {        
+        setCurr(x, y);
+//        updateTurtlelMat();
+    } 
+    updateCameraView(x, y);
+    glutPostRedisplay();
+}
+void mouseButton (int button, int state, int x, int y) 
+{
+    if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON) {
+        arcball_on = true;
+        initMouseStartPoint(x, y);
+//        printf("arcball_on\n");
+        setStartCurr(x,y);
+    } else {
+        arcball_on = false;
+    }
+}
+
+float angle = -0.008;
+void animate(int value)
+{
+    if (animateWorld) {
+    //    printf("animate..\n");
+        updateTurtleMatrix(getOBJ((char*)"recognizer"), angle, true);
+        updateTurtleMatrix(getOBJ((char*)"recognizer2"), -angle, true);
+        updateTurtleMatrix(getOBJ((char*)"recognizer5"), angle, true);
+        updateTurtleMatrix(getOBJ((char*)"recognizer4"), -angle, true);
+        updateTurtleMatrix(getOBJ((char*)"satelite"), angle, false);
+
+        float speed = 0.070;
+    updateTurtleMatrix(getOBJ((char*)"tron"), angle, false);
+        moveObject(getOBJ((char*)"shipFleet"), speed, 600);
+        moveObject(getOBJ((char*)"recognizer3"), speed, 70);
+
+        glutPostRedisplay();
+    }
+    glutTimerFunc(35, animate, 0);
+}
+
+int main (int argc, char** argv) {
+    int win;
+    printf("here1");
+    
+    glutInit(&argc,argv);
+        printf("here2");
+    glutInitWindowSize(W,H);    printf("here3");
+    glutInitWindowPosition(50,50);    printf("here4");
+    // Tell glut we will be using depth buffering (as well as rgba color and
+    // double precision if possible). 
+    glutInitDisplayMode(GLUT_RGBA|GLUT_DOUBLE|GLUT_DEPTH);    printf("here5");
+    win = glutCreateWindow("cube");
+    glutSetWindow(win);
+    
+    GLenum glew_status = glewInit();
+    if (glew_status != GLEW_OK) {
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(glew_status));
+        return 1;
+    }
+    
+    if (!GLEW_VERSION_2_0) {
+        fprintf(stderr, "Error: your graphics card does not support OpenGL 2.0\n");
+        return 1;
+    }
+    
+    
+    // try to set up GPU to draw; if it works, fire off GLUT
+    if (init_resources()) {
+        // set display callback function
+        glutDisplayFunc(display);
+        // set key press callback function
+        glutMouseFunc(mouseButton);
+        glutMotionFunc(mouseMotion);
+        glutKeyboardFunc(keyPressed);
+//        glutPassiveMotionFunc(lookAround);
+        glutSpecialFunc(handleSpecialKey);
+        // turn on depth buffering in OpenGL
+        glutTimerFunc(25, animate, 0);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_COLOR_MATERIAL);
+        glutMainLoop();
+    }
+    
+    free_resources();
+    return 0;
+}
