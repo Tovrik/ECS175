@@ -33,8 +33,8 @@ GLint uniform_turtleMat;
 
 /* GLOBAL VARAIBLES */
 /* (storage is actually allocated here) */
-int screen_W=600;  /* window width */
-int screen_H=600;  /* window height */
+int screen_W=1200;  /* window width */
+int screen_H=1200;  /* window height */
 
 
 int start_mx, start_my, cur_mx, cur_my; 
@@ -593,10 +593,10 @@ int init_resources()
     bindVariable(uniform_LightPos, (char*)"lightPos", Uniform);
     bindVariable(uniform_turtleMat, (char*)"turtleMatrix", Uniform);
     
-    loadObject(tronCycle, (char*)"tron_cycle.obj", glm::vec3(0, 0, 0));
-    loadObject(recognizer, (char*)"recognizer_Large.obj", glm::vec3(0, 0, 0));
+    loadObject(tronCycle, (char*)"untitled.obj", glm::vec3(0, 0, 0));
+    loadObject(recognizer, (char*)"medieval_church_norms.obj", glm::vec3(-10, 0, 0));
 
-    loadObject(spaceShip1, (char*)"spaceShip1.obj", glm::vec3(100, 100, 0));
+    loadObject(spaceShip1, (char*)"medieval_store_norms.obj", glm::vec3(25, 0, 0));
 //    loadObject(spaceShip2, (char*)"spaceShip2.obj", glm::vec3(-65, 0, 0));
     loadObject(shipFleet, (char*)"shipFleet.obj", glm::vec3(0, -65, -400));
     loadObject(satelite, (char*)"satelite.obj", glm::vec3(-45, 75, -20));
